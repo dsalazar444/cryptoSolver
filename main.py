@@ -5,7 +5,8 @@ class cryptoSolver:
     matrix: np.ndarray
     predictions: dict[list] # no pongo tipo porque tendrá el primero como int, resto como diccionarios
     letters: list[str]
-    result_in_matrix: list
+    result_in_matrix: list[int]
+    letters_appears_columns: dict
     hasSolution: bool
     codeToDecode: list[int]
 
@@ -21,9 +22,11 @@ class cryptoSolver:
         print(self.matrix)
         self.letters = self.getLetters()
         print(self.letters)
+        self.letters_appears_columns = self.getLettersAppearsColumns()
+
         self.result_in_matrix = self.matrix[-1]
         self.predictions = {}
-        self.hasSolution = self.solveLetters()
+        #self.hasSolution = self.solveLetters()
     
     @staticmethod
     def normalizeMatrix(matrix: list) -> np.array:
@@ -33,7 +36,6 @@ class cryptoSolver:
         # -> sumas se asumiran alineadas a derecha
 
         return normalized_matrix
-
 
     def getLetters(self) -> list:
         # obtener cantidad de letras repetidas por columna
@@ -73,15 +75,15 @@ class cryptoSolver:
 
         print("Total de elementos repetidos por columna:", number_repeats_per_column)
 
-    def solveLetters(self, index=0, digits_available=None):
+    def solveLetters(self, index: int = 0, digits_available: list = None) -> bool:
         if digits_available is None:
             digits_available = list(range(10))
         
         # caso base
         if index == len(self.letters):
-            return self.verifyCongruence()
+            return self.verifyCongruenceWithCarry()
         
-        letter = self.letters[index]
+        letter: str = self.letters[index]
         
         for digit in digits_available:
             # probamos con todos los digitos disponibles en este nivel, si ninguno da, nos devolvemos.
@@ -89,7 +91,7 @@ class cryptoSolver:
 
                 self.predictions[letter] = digit
                 # "actualizamos" digit_avaible (en otra var) para ignorar el digit que falló
-                remaining = [d for d in digits_available if d != digit]
+                remaining: list = [d for d in digits_available if d != digit]
 
                 #intentamos con sig letra
                 if self.solveLetters(index + 1, remaining):
@@ -101,34 +103,74 @@ class cryptoSolver:
         return False
 
     def verifyCongruence(self, letter: str, possible_value: int) -> bool:
-        
-        # verifica que valor pasado si encage en todo el result
-        pass
+        # obtener indices de columnas donde sale esa letra
+        for index_col in self.getLettersAppearsColumns[letter]:
+            addens: list = [x for x in self.matrix[:-1, index_col].tolist() if x != '']
+            result_letter: str = self.result_in_matrix[index_col]
+
+            values: list = [self.getDigit(adden, letter, possible_value) for adden in addens] + [self.getDigit(result_letter, letter, possible_value)]
+
+            if(None in values): # si alguno de los valores es none, no se puede hacer suma (incluso el result)
+                return True # se puede añadir, porque todavia no hay forma de saber
+            
+            total: int = sum(values[:-1])
+            if total == values[-1]:
+                return True
+            
+        return False
     
-    @staticmethod
-    def getDigit(digits_available: list, ignore_digit: int | None) -> int | None:
-        if not digits_available:
-            return None
+    def verifyCongruenceWithCarry(self) -> bool:
+        carry: int = 0
+        # recorremos de derecha a izq
+        for index in range(np.fliplr(self.matrix).T):
+            
+            index_inv = len(self.matrix[0] - 1) - index
 
-        if ignore_digit is None:
-            return digits_available[0]
+            #obtenemos sumandos y resultado
+            addens: list = [x for x in self.matrix[:-1, index_inv].tolist() if x != '']
+            result_letter: str = self.result_in_matrix[index_inv]
 
-        for digit in digits_available:
-            if digit != ignore_digit:
-                return digit
+            #obtenemos int asociados a cada elemento
+            values: list = [self.predictions[adden] for adden in addens]
+            result_value = self.predictions[result_letter]
 
-        return None
+            # sumamos teniendo en cuenta carry
+            total: int = sum(values) + carry
+
+            if total % 10 != result_value:
+                return False    
         
+            carry = total // 10
+        
+        # si llega acá, nada falló, entonces está bien, todo coincide
+        return carry == 0
+
+
+
+    def getDigit(self, letter: str, new_letter: str = None, possible_value: int = None) -> int:
+        # letter es cualquier letra que nos salga en adden
+        # new letter es para verificar si es la letra que estamos verificando para añadir a 
+        # predictions, y como todavia no esta ahi, tenemos que retornar el valor manualmente 
+        if letter == new_letter and possible_value is not None:
+            return possible_value
+        return self.predictions[letter]
+
+    
+    def getLettersAppearsColumns(self):
+        self.getLettersAppearsColumns = dict.fromkeys(self.letters)
+        for letter in self.letters:
+            rows, cols = np.where(self.matrix == letter)
+            print(rows, cols)
+
+            col_indexes = list(set(cols))
+            self.getLettersAppearsColumns[letter] = col_indexes
 
     def solveCode():
         pass
 
-    
-
 
 def main():
     crypto_solver = cryptoSolver()
-
 
 if __name__ == "__main__":
     main()
