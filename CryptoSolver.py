@@ -3,13 +3,7 @@ from collections.abc import Iterator
 
 class CryptoSolver:
 
-    def __init__(self):
-
-        matrix = [
-            ['h', 'a', 'r', 'r', 'y'],
-            ['p', 'o', 't', 't', 'e', 'r'],
-            ['t', 'r', 'o', 'l', 'l', 's']
-        ]
+    def __init__(self, matrix: list, encoded_message: list):
 
         self.matrix = self.normalize_matrix(matrix)
 
@@ -25,7 +19,7 @@ class CryptoSolver:
         print(self.predictions)
         print(self.has_solution)
 
-        self.message_to_decode = [9,0,3,9,0,0,4,3,9,6,5,1,8,4,8]
+        self.message_to_decode = encoded_message
         self.message_decoded = self.decode_message()
         print("".join(self.message_decoded))
 
