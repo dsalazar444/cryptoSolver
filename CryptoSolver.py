@@ -11,6 +11,7 @@ class CryptoSolver:
         self.addend_rows = self.matrix[:-1]
 
         self.predictions = {}
+        self.history = []
 
         self.non_zero_letters = self.get_letters_cannot_be_zero()
 
@@ -22,6 +23,7 @@ class CryptoSolver:
         self.message_to_decode = encoded_message
         self.message_decoded = self.decode_message()
         print("".join(self.message_decoded))
+        #print("history: ", self.history)
 
 
     @staticmethod
@@ -162,10 +164,16 @@ class CryptoSolver:
 
                 self.assign(result_letter, expected_digit) # asignamos a resultado el digit de la suma
 
+                # registramos en history con copia para capturar el estado en ese momento
+                self.history.append(self.predictions.copy())
+
                 if self.solve_column(col - 1, next_carry): #probamos que si funcione para siguiente columna, si no, deshacemos
                     return True
 
                 self.unassign(result_letter)
+
+                # registramos en history
+                self.history.append(self.predictions.copy())
 
                 return False
         
@@ -211,6 +219,9 @@ class CryptoSolver:
 
             self.assign(letter, d)
 
+            # registramos en history
+            self.history.append(self.predictions.copy())
+
             # si funciona con ese digit, es decir, se puede calcular sig col, true, si no, desasignamos
             if self.solve_addends(
                 col,
@@ -223,6 +234,8 @@ class CryptoSolver:
                 return True
 
             self.unassign(letter)
+            # registramos en history
+            self.history.append(self.predictions.copy())
 
         return False
     
