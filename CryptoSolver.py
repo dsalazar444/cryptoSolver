@@ -25,6 +25,10 @@ class CryptoSolver:
         print(self.predictions)
         print(self.has_solution)
 
+        self.message_to_decode = [9,0,3,9,0,0,4,3,9,6,5,1,8,4,8]
+        self.message_decoded = self.decode_message()
+        print("".join(self.message_decoded))
+
 
     @staticmethod
     def normalize_matrix(matrix: list) -> np.ndarray:
@@ -227,3 +231,18 @@ class CryptoSolver:
             self.unassign(letter)
 
         return False
+    
+    def decode_message(self) -> list:
+        """A partir de tabla de predicción, decodifica mensaje"""
+        if(not self.has_solution):
+            return []
+        
+        message: list = []
+
+        for digit in self.message_to_decode:
+
+            # obtenemos la letra asociado al digit
+            letter: int = next((key for key, value in self.predictions.items() if value == digit), None)
+            message.append(letter)
+    
+        return message
