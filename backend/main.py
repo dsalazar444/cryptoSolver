@@ -1,4 +1,4 @@
-from CryptoSolver import CryptoSolver
+from backend.CryptoSolver import CryptoSolver
 
 def main():
     matrix: list = [

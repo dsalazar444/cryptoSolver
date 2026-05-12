@@ -33,7 +33,7 @@ function App() {
 
   return (
     <div style={{ maxWidth: 600, margin: "2rem auto", fontFamily: "sans-serif" }}>
-      <h2>CryptoSolver Frontend Test</h2>
+      <h2>CryptoSolver temporal pa probar api</h2>
       <form onSubmit={handleSubmit}>
         <div>
           <label>Matriz (JSON):</label>
