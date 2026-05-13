@@ -2,7 +2,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List, Dict, Any
-from backend.CryptoSolver import CryptoSolver
+from .CryptoSolver import CryptoSolver
 
 app = FastAPI()
 
@@ -40,6 +40,7 @@ def solve_cryptosolver(data: SolveRequest):
         history=solver.history,
         decoded_message=solver.message_decoded
     )
+
 
 @app.get("/health")
 def health():
